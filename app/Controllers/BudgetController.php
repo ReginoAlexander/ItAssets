@@ -6,6 +6,11 @@ require_once __DIR__ . '/../Models/Prices.php';
 class BudgetController{
     private $budgetModel;
 
+    // Deben coincidir con los objetivos que usa UrgenciasController
+    private const RAM_OBJETIVO_GB    = 16;
+    private const CPU_GEN_OBJETIVO   = 13;
+    private const CPU_OBJETIVO_LABEL = 'Intel Core i5-13xxx'; // ajusta al modelo real que compres
+
     public function __construct()
     {
         $this->budgetModel = new Budget();
@@ -63,10 +68,65 @@ class BudgetController{
                 VALUES (?, ?, ?, ?)",
                 [$idPresupuesto, $item['asset_id'], $item['valor'], $item['peso']]
             );
+
+            // --- 4) Aplicar la mejora físicamente en pc_specs ---
+            $this->aplicarMejora((int) $item['asset_id']);
         }
     
         header('Location: /ItAssets/public/budgets');
         exit;
+    }
+
+    /**
+     * Actualiza en pc_specs solo los campos que necesitaban mejora para este asset
+     * (mismo criterio que usa UrgenciasController para calcular el costo).
+     * No toca lo que ya estaba al nivel objetivo.
+     */
+    private function aplicarMejora(int $assetId): void
+    {
+        $specs = $this->budgetModel->query(
+            "SELECT ram_gb, disk_type, cpu_gen FROM pc_specs WHERE asset_id = ?",
+            [$assetId]
+        )->fetch();
+
+        if (!$specs) {
+            return; // asset sin fila en pc_specs (ej. equipo nuevo), no hay nada que actualizar aquí
+        }
+
+        $sets   = [];
+        $params = [];
+
+        if ($specs['ram_gb'] < self::RAM_OBJETIVO_GB) {
+            $sets[]   = 'ram_gb = ?';
+            $params[] = self::RAM_OBJETIVO_GB;
+        }
+
+        if ($specs['disk_type'] === 'HDD') {
+            $sets[]   = 'disk_type = ?';
+            $params[] = 'SSD';
+        }
+
+        if ($specs['cpu_gen'] < self::CPU_GEN_OBJETIVO) {
+            $sets[]   = 'cpu_gen = ?';
+            $params[] = self::CPU_GEN_OBJETIVO;
+            $sets[]   = 'cpu = ?';
+            $params[] = self::CPU_OBJETIVO_LABEL;
+        }
+
+        if (empty($sets)) {
+            return; // nada que actualizar
+        }
+
+        // Ya se invirtió en este equipo: su costo de mejora pendiente vuelve a 0.
+        // El beneficio_total se recalcula correctamente la próxima vez que
+        // le des clic a "Calcular beneficios" (los valores de urgencia bajan
+        // automáticamente porque las specs ya son mejores).
+        $sets[]   = 'costo_mejora = 0';
+        $sets[]   = 'updated_at = CURDATE()';
+        $params[] = $assetId;
+
+        $sql = 'UPDATE pc_specs SET ' . implode(', ', $sets) . ' WHERE asset_id = ?';
+        $this->budgetModel->query($sql, $params);
     }
     
     /**

@@ -1,8 +1,11 @@
-
 .env
 vendor/
 *.log
-.htaccesspublic/assets/tabler/**/node_modules/
+public/assets/tabler/core/node_modules/
+public/assets/tabler/docs/node_modules/
+public/assets/tabler/preview/node_modules/
+public/assets/tabler/node_modules/
 public/assets/tabler/preview/
 public/assets/tabler/docs/
 public/assets/tabler/shared/
+.htaccess
