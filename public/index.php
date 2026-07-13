@@ -30,7 +30,6 @@ $asset = new AssetController();
 $budget = new BudgetController();
 $urgencias = new UrgenciasController();
 
-
 if($uri === '/login' && $method === 'GET'){
     $auth->showLogin();
 }elseif ($uri === '/login' && $method === 'POST'){
@@ -45,7 +44,10 @@ if($uri === '/login' && $method === 'GET'){
     $asset->filter();
 }elseif ($uri === '/asset/details' && $method === 'GET'){
     $asset->details();
-}elseif ($uri === '/budgets' && $method === 'GET'){
+}elseif ($uri === '/asset/store' && $method === 'POST'){
+    $asset->store();
+}
+elseif ($uri === '/budgets' && $method === 'GET'){
     $budget->index();
 }elseif ($uri === '/budgets' && $method === 'POST'){
     $budget->calcularMochila();

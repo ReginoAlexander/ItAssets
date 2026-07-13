@@ -4,7 +4,7 @@
         Inventario de <?= $assets[0]['location_name'] ?>
     </h5>
     <div class="card-actions">
-        <a href="" class="btn btn-primary">Nuevo</a>
+        <a href="#" class="btn btn-primary btnNew">Nuevo</a>
     </div>
 </div>
 <div class="card-body">
@@ -19,7 +19,7 @@
             <div class="card text-center h80">
                 <div class="card-body flex-column">
                     <div class="mb-2">
-                        <h5><?= $asset['model_name'] ?></h5>
+                        <h5><?= $asset['hostname'] ?></h5>
                         <span class="display-4"><img src="/ItAssets/public/assets/img/<?= $asset['type'] ?>.png" style="max-width: 50px;" alt=""></span>
                     </div>
                     <h6><?= $asset['name'] ?></h6>
